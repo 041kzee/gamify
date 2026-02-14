@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../lib/firebase";
 import { Oswald } from "next/font/google";
+import { updateProfile } from "firebase/auth";
+
 
 const oswald = Oswald({
   subsets: ["latin"],
@@ -28,28 +30,32 @@ export default function Register() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
+  e.preventDefault();
+  setError("");
 
-    try {
-      await createUserWithEmailAndPassword(
-        auth,
-        form.email,
-        form.password
-      );
+  try {
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      form.email,
+      form.password
+    );
 
-      localStorage.setItem("role", form.role);
+    await updateProfile(userCredential.user, {
+      displayName: form.name,
+    });
 
-      if (form.role === "teacher") {
-        router.push("/teacher-dashboard");
-      } else {
-        router.push("/student-dashboard");
-      }
+    localStorage.setItem("role", form.role);
 
-    } catch (err) {
-      setError(err.message);
+    if (form.role === "teacher") {
+      router.push("/teacher-dashboard");
+    } else {
+      router.push("/student-dashboard");
     }
-  };
+
+  } catch (err) {
+    setError(err.message);
+  }
+};
 
   return (
     <div className={`${oswald.className} min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-slate-50 px-6`}>

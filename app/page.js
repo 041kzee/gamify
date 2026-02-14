@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Oswald } from 'next/font/google';
 const oswald = Oswald({ subsets: ['latin'], weight: '400' });
 import {useRouter} from 'next/navigation'
-
+import Footer from './components/Footer'
 export default function LandingPage() {
   const [selectedRole, setSelectedRole] = useState(null);
   const router = useRouter();
@@ -128,6 +128,7 @@ export default function LandingPage() {
                   ? 'bg-slate-900 text-white hover:bg-slate-800 shadow-lg hover:shadow-xl'
                   : 'bg-slate-300 text-slate-500 cursor-not-allowed'
               }`}
+              onClick={() => router.push(selectedRole === 'student' ? '/student-dashboard' : '/teacher-dashboard')}
             >
               {selectedRole ? `Continue as ${selectedRole === 'student' ? 'Student' : 'Teacher'}` : 'Select a Role'}
             </button>
@@ -138,12 +139,8 @@ export default function LandingPage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="px-6 py-8 border-t border-slate-200">
-        <div className="max-w-6xl mx-auto text-center text-slate-500 text-sm">
-          <p> PandaLearn - Making Learning Fun, One Bamboo Shoot at a Time</p>
-        </div>
-      </footer>
+    
+     <Footer/>
     </div>
   );
 }
