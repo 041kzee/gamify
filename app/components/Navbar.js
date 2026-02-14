@@ -8,7 +8,8 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [userName, setUserName] = useState(null);
+ const [userName, setUserName] = useState(null);
+
   const router = useRouter();
 
   useEffect(() => {
@@ -33,32 +34,50 @@ export default function Navbar() {
   };
 
   return (
-    <header className="px-6 py-4 bg-white/80 backdrop-blur-sm sticky top-0 z-50 border-b border-slate-200">
+    <header className="px-6 py-4 bg-white/80 backdrop-blur-sm  top-0 z-50 border-b border-slate-200">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between">
 
+          {/* Logo */}
           <div
             className="flex items-center gap-2 cursor-pointer"
             onClick={() => router.push("/")}
           >
-            <img src="/logo.png" className="h-16 w-16 md:h-20 md:w-20" alt="PandaLearn Logo" />
+            <img
+              src="/logo.png"
+              className="h-16 w-16 md:h-20 md:w-20"
+              alt="PandaLearn Logo"
+            />
             <span className="text-xl md:text-2xl font-bold text-slate-800">
               PandaLearn
             </span>
           </div>
 
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
-            <a href="#features" className="text-slate-700 hover:text-emerald-600 font-medium transition-colors">
+            <button
+              onClick={() => router.push("/#features")}
+              className="text-slate-700 hover:text-emerald-600 font-medium transition-colors"
+            >
               Features
-            </a>
-            <a href="#about" className="text-slate-700 hover:text-emerald-600 font-medium transition-colors">
+            </button>
+
+            <button
+              onClick={() => router.push("/about")}
+              className="text-slate-700 hover:text-emerald-600 font-medium transition-colors"
+            >
               About
-            </a>
-            <a href="#contact" className="text-slate-700 hover:text-emerald-600 font-medium transition-colors">
+            </button>
+
+            <button
+              onClick={() => router.push("/#contact")}
+              className="text-slate-700 hover:text-emerald-600 font-medium transition-colors"
+            >
               Contact
-            </a>
+            </button>
           </nav>
 
+          {/* Desktop Auth Buttons */}
           <div className="hidden md:flex gap-3 items-center">
             {userName ? (
               <>
@@ -90,27 +109,54 @@ export default function Navbar() {
             )}
           </div>
 
+          {/* Mobile Menu Button */}
           <button
             onClick={toggleMenu}
             className="md:hidden p-2 text-slate-700 hover:text-slate-900 transition-colors"
             aria-label="Toggle menu"
           >
-            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {isMenuOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
           </button>
         </div>
 
+        {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden mt-4 pb-4 border-t border-slate-200 pt-4">
             <nav className="flex flex-col gap-4">
-              <a href="#features" className="text-slate-700 hover:text-emerald-600 font-medium py-2">
+
+              <button
+                onClick={() => {
+                  router.push("/#features");
+                  setIsMenuOpen(false);
+                }}
+                className="text-left text-slate-700 hover:text-emerald-600 font-medium py-2"
+              >
                 Features
-              </a>
-              <a href="#about" className="text-slate-700 hover:text-emerald-600 font-medium py-2">
+              </button>
+
+              <button
+                onClick={() => {
+                  router.push("/#about");
+                  setIsMenuOpen(false);
+                }}
+                className="text-left text-slate-700 hover:text-emerald-600 font-medium py-2"
+              >
                 About
-              </a>
-              <a href="#contact" className="text-slate-700 hover:text-emerald-600 font-medium py-2">
+              </button>
+
+              <button
+                onClick={() => {
+                  router.push("/#contact");
+                  setIsMenuOpen(false);
+                }}
+                className="text-left text-slate-700 hover:text-emerald-600 font-medium py-2"
+              >
                 Contact
-              </a>
+              </button>
 
               <div className="flex flex-col gap-3 mt-4 pt-4 border-t border-slate-200">
                 {userName ? (
@@ -135,10 +181,11 @@ export default function Navbar() {
                         router.push("/login");
                         setIsMenuOpen(false);
                       }}
-                      className="px-4 py-2 text-slate-700 text-left"
+                      className="px-4 py-2 text-left text-slate-700"
                     >
                       Login
                     </button>
+
                     <button
                       onClick={() => {
                         router.push("/register");
