@@ -20,10 +20,10 @@ export default function LandingPage() {
             <span className="text-2xl font-bold text-slate-800">PandaLearn</span>
           </div>
           <div className="flex gap-3">
-            <button className="px-4 py-2 text-slate-700 hover:text-slate-900 font-medium transition-colors">
+            <button className="px-4 py-2 text-slate-700 hover:text-slate-900 font-medium transition-colors cursor-pointer" onClick={() => router.push('/login')}>
               Login
             </button>
-            <button className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-medium transition-colors">
+            <button className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-medium transition-colors cursor-pointer" onClick={()=> router.push('/register')}>
               Get Started
             </button>
           </div>

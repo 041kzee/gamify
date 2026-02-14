@@ -24,10 +24,7 @@ export default function TeacherDashboard() {
   const [students, setStudents] = useState([]);
 
   useEffect(() => {
-    const role = localStorage.getItem("role");
-    if (role !== "teacher") {
-      router.push("/register");
-    }
+   
 
     setAnalytics({
       totalStudents: 0,
