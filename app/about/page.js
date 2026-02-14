@@ -12,11 +12,11 @@ const oswald = Oswald({
 export default function About() {
   return (
     <div
-      className={`${oswald.className}  min-h-screen bg-gradient-to-br from-emerald-50 via-white to-slate-50 px-6 py-10`}
+      className={`${oswald.className} min-h-screen bg-gradient-to-br from-emerald-50 via-white to-slate-50 px-6 py-10`}
     >
       <Navbar />
-<div className="flex flex-row">
-      <div className="max-w-4xl mx-auto flex-1">
+
+      <div className="max-w-4xl mx-auto">
 
         <h1 className="text-4xl font-semibold text-slate-800 mb-8">
           About Our Platform
@@ -55,11 +55,6 @@ export default function About() {
 
         </div>
 
-      </div>
-
-      <div className="flex-1">
-        <img src="panda.png"></img>
-      </div>
       </div>
 
       <Footer />
