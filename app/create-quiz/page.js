@@ -27,7 +27,12 @@ export default function CreateQuiz() {
 
   const [quizTitle, setQuizTitle] = useState("");
   const [questions, setQuestions] = useState([
-    { questionText: "", options: ["", "", "", ""], correctAnswer: "" },
+    {
+      questionText: "",
+      options: ["", "", "", ""],
+      correctAnswer: "",
+      difficulty: "medium",
+    },
   ]);
 
   useEffect(() => {
@@ -52,34 +57,53 @@ export default function CreateQuiz() {
   const addQuestion = () => {
     setQuestions([
       ...questions,
-      { questionText: "", options: ["", "", "", ""], correctAnswer: "" },
+      {
+        questionText: "",
+        options: ["", "", "", ""],
+        correctAnswer: "",
+        difficulty: "medium",
+      },
     ]);
   };
 
   const handleSaveQuiz = async () => {
-    if (!quizTitle) return alert("Enter quiz title");
+    if (!quizTitle.trim()) return alert("Enter quiz title");
 
     try {
       const user = auth.currentUser;
       if (!user) return alert("Not logged in");
 
+      // Create quiz document
       const quizRef = await addDoc(collection(db, "quizzes"), {
-        title: quizTitle,
+        title: quizTitle.trim(),
         teacherId: user.uid,
         createdAt: serverTimestamp(),
       });
 
+      // Save questions
       for (let q of questions) {
-        await addDoc(collection(db, "quizzes", quizRef.id, "questions"), {
-          questionText: q.questionText,
-          options: q.options,
-          correctAnswer: q.correctAnswer,
-        });
+        if (
+          !q.questionText.trim() ||
+          q.options.some((opt) => !opt.trim()) ||
+          !q.correctAnswer.trim()
+        ) {
+          alert("Please fill all fields for every question.");
+          return;
+        }
+
+        await addDoc(
+          collection(db, "quizzes", quizRef.id, "questions"),
+          {
+            questionText: q.questionText.trim(),
+            options: q.options.map((opt) => opt.trim()),
+            correctAnswer: q.correctAnswer.trim(),
+            difficulty: q.difficulty,
+          }
+        );
       }
 
       alert("Quiz Created Successfully!");
       router.push("/teacher-dashboard");
-
     } catch (error) {
       console.error(error);
       alert("Error creating quiz");
@@ -87,13 +111,14 @@ export default function CreateQuiz() {
   };
 
   return (
-    <div className={`${oswald.className} min-h-screen bg-gradient-to-br from-emerald-50 via-white to-slate-50 px-6 py-10`}>
+    <div
+      className={`${oswald.className} min-h-screen bg-gradient-to-br from-emerald-50 via-white to-slate-50 px-6 py-10`}
+    >
       <Navbar />
 
       <div className="max-w-4xl mx-auto">
-
         <h1 className="text-4xl font-semibold text-slate-800 mb-8">
-          Create New Quiz
+          Create New Adaptive Quiz
         </h1>
 
         <input
@@ -105,17 +130,40 @@ export default function CreateQuiz() {
         />
 
         {questions.map((q, qIndex) => (
-          <div key={qIndex} className="bg-white p-6 rounded-2xl shadow-md mb-6">
-
+          <div
+            key={qIndex}
+            className="bg-white p-6 rounded-2xl shadow-md mb-6"
+          >
             <input
               type="text"
               placeholder="Question"
               value={q.questionText}
               onChange={(e) =>
-                handleQuestionChange(qIndex, "questionText", e.target.value)
+                handleQuestionChange(
+                  qIndex,
+                  "questionText",
+                  e.target.value
+                )
               }
               className="w-full p-3 border rounded-lg mb-4"
             />
+
+            {/* Difficulty Selector */}
+            <select
+              value={q.difficulty}
+              onChange={(e) =>
+                handleQuestionChange(
+                  qIndex,
+                  "difficulty",
+                  e.target.value
+                )
+              }
+              className="w-full p-2 border rounded-lg mb-4"
+            >
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
 
             {q.options.map((option, oIndex) => (
               <input
@@ -124,7 +172,11 @@ export default function CreateQuiz() {
                 placeholder={`Option ${oIndex + 1}`}
                 value={option}
                 onChange={(e) =>
-                  handleOptionChange(qIndex, oIndex, e.target.value)
+                  handleOptionChange(
+                    qIndex,
+                    oIndex,
+                    e.target.value
+                  )
                 }
                 className="w-full p-2 border rounded-lg mb-2"
               />
@@ -132,10 +184,14 @@ export default function CreateQuiz() {
 
             <input
               type="text"
-              placeholder="Correct Answer"
+              placeholder="Correct Answer (must match one option exactly)"
               value={q.correctAnswer}
               onChange={(e) =>
-                handleQuestionChange(qIndex, "correctAnswer", e.target.value)
+                handleQuestionChange(
+                  qIndex,
+                  "correctAnswer",
+                  e.target.value
+                )
               }
               className="w-full p-2 border rounded-lg mt-2"
             />
@@ -155,7 +211,6 @@ export default function CreateQuiz() {
         >
           Save Quiz
         </button>
-
       </div>
 
       <Footer />

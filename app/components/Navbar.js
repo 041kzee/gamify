@@ -49,14 +49,14 @@ export default function Navbar() {
               alt="PandaLearn Logo"
             />
             <span className="text-xl md:text-2xl font-bold text-slate-800">
-              PandaLearn
+              PandaPilot
             </span>
           </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
             <button
-              onClick={() => router.push("/#features")}
+              onClick={() => router.push("/features")}
               className="text-slate-700 hover:text-emerald-600 font-medium transition-colors"
             >
               Features
@@ -70,10 +70,16 @@ export default function Navbar() {
             </button>
 
             <button
-              onClick={() => router.push("/#contact")}
+              onClick={() => router.push("/contact")}
               className="text-slate-700 hover:text-emerald-600 font-medium transition-colors"
             >
               Contact
+            </button>
+            <button
+              onClick={() =>router.push("/")}
+              className="text-slate-700 hover:text-emerald-600 font-medium transition-colors"
+            >
+              Dashboard
             </button>
           </nav>
 

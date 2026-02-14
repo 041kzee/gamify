@@ -25,28 +25,39 @@ export default function TakeQuizPage() {
 
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [answers, setAnswers] = useState({});
-  const [submitted, setSubmitted] = useState(false);
   const [name, setName] = useState("");
 
+  const [currentQuestion, setCurrentQuestion] = useState(null);
+  const [difficulty, setDifficulty] = useState("medium");
+  const [score, setScore] = useState(0);
+  const [answeredCount, setAnsweredCount] = useState(0);
+  const [usedQuestions, setUsedQuestions] = useState(new Set());
+  const [submitted, setSubmitted] = useState(false);
+  const [feedback, setFeedback] = useState("");
+
+  // 🔥 NEW: Track performance by difficulty
+  const [performance, setPerformance] = useState({
+    easy: { correct: 0, total: 0 },
+    medium: { correct: 0, total: 0 },
+    hard: { correct: 0, total: 0 },
+  });
+
+  // Fetch quiz
   useEffect(() => {
     if (!id) return;
 
     const fetchQuiz = async () => {
       try {
-        // Fetch quiz main document
         const quizRef = doc(db, "quizzes", id);
         const quizSnap = await getDoc(quizRef);
 
         if (!quizSnap.exists()) {
-          console.log("Quiz not found");
           setLoading(false);
           return;
         }
 
         const quizData = quizSnap.data();
 
-        // Fetch subcollection questions
         const questionsRef = collection(db, "quizzes", id, "questions");
         const questionsSnap = await getDocs(questionsRef);
 
@@ -59,6 +70,14 @@ export default function TakeQuizPage() {
           ...quizData,
           questions,
         });
+
+        const firstQuestion = getNextQuestion(
+          questions,
+          "medium",
+          new Set()
+        );
+
+        setCurrentQuestion(firstQuestion);
       } catch (error) {
         console.error("Error fetching quiz:", error);
       } finally {
@@ -69,62 +88,150 @@ export default function TakeQuizPage() {
     fetchQuiz();
   }, [id]);
 
-  // Select answer
-  const handleSelectOption = (qIndex, option) => {
-    if (submitted) return;
+  const getNextQuestion = (questions, level, used) => {
+    const filtered = questions.filter(
+      (q) => q.difficulty === level && !used.has(q.id)
+    );
 
-    setAnswers((prev) => ({
-      ...prev,
-      [qIndex]: option,
-    }));
+    if (filtered.length === 0) return null;
+
+    return filtered[Math.floor(Math.random() * filtered.length)];
   };
 
-  // Submit quiz
-  const handleSubmit = async () => {
-    if (!quiz) return;
+  // 🔥 Adaptive + performance tracking
+  const handleAnswer = (option) => {
+    if (!currentQuestion || submitted) return;
 
+    const isCorrect = option === currentQuestion.correctAnswer;
+
+    const difficultyPoints = {
+      easy: 1,
+      medium: 2,
+      hard: 3,
+    };
+
+    let newScore = score;
+    let nextDifficulty = difficulty;
+
+    // Update performance tracking
+    setPerformance((prev) => {
+      const updated = { ...prev };
+      updated[difficulty].total += 1;
+      if (isCorrect) {
+        updated[difficulty].correct += 1;
+      }
+      return updated;
+    });
+
+    if (isCorrect) {
+      newScore += difficultyPoints[difficulty];
+
+      nextDifficulty =
+        difficulty === "easy"
+          ? "medium"
+          : difficulty === "medium"
+          ? "hard"
+          : "hard";
+    } else {
+      nextDifficulty =
+        difficulty === "hard"
+          ? "medium"
+          : difficulty === "medium"
+          ? "easy"
+          : "easy";
+    }
+
+    setScore(newScore);
+    setAnsweredCount((prev) => prev + 1);
+    setDifficulty(nextDifficulty);
+
+    const updatedUsed = new Set(usedQuestions);
+    updatedUsed.add(currentQuestion.id);
+    setUsedQuestions(updatedUsed);
+
+    const nextQ = getNextQuestion(
+      quiz.questions,
+      nextDifficulty,
+      updatedUsed
+    );
+
+    if (nextQ) {
+      setCurrentQuestion(nextQ);
+    } else {
+      generatePersonalizedFeedback(newScore);
+      setSubmitted(true);
+    }
+  };
+
+  // 🔥 Personalized Feedback Generator
+  const generatePersonalizedFeedback = (finalScore) => {
+    const percentage =
+      answeredCount === 0
+        ? 0
+        : (finalScore / (answeredCount * 3)) * 100;
+
+    let message = "";
+
+    if (percentage >= 80) {
+      message =
+        "🌟 Outstanding performance! You handled higher difficulty questions confidently. You're ready for advanced challenges!";
+    } else if (percentage >= 60) {
+      if (
+        performance.hard.total > 0 &&
+        performance.hard.correct <
+          performance.hard.total / 2
+      ) {
+        message =
+          "👍 Good job! You perform well on easier questions. Focus on mastering hard-level concepts to improve further.";
+      } else {
+        message =
+          "Nice effort! With a bit more practice, you can reach top-level mastery.";
+      }
+    } else {
+      message =
+        "📘 You should revisit foundational concepts. Strengthen easy-level topics first, then move up gradually.";
+    }
+
+    setFeedback(message);
+  };
+
+  const handleSubmit = async () => {
     if (!name.trim()) {
       alert("Please enter your name before submitting.");
       return;
     }
 
-    // Calculate final score properly
-    let calculatedScore = 0;
-
-    quiz.questions.forEach((q, index) => {
-      if (answers[index] === q.correctAnswer) {
-        calculatedScore++;
-      }
-    });
-
     try {
       await addDoc(collection(db, "quizResults"), {
         quizId: id,
         name: name.trim(),
-        score: calculatedScore,
-        total: quiz.questions.length,
+        score,
+        total: answeredCount,
+        performance,
+        feedback,
         createdAt: serverTimestamp(),
       });
 
-      setSubmitted(true);
-
-      alert(
-        `Quiz submitted! Your score: ${calculatedScore}/${quiz.questions.length}`
-      );
+      alert("Result saved successfully!");
+      router.push("/student-dashboard");
     } catch (error) {
       console.error("Error submitting quiz:", error);
-      alert("Failed to submit quiz. Try again.");
+      alert("Failed to save result.");
     }
   };
 
   if (loading)
     return (
-      <div className="p-10 text-xl text-center">Loading quiz...</div>
+      <div className="p-10 text-xl text-center">
+        Loading quiz...
+      </div>
     );
 
   if (!quiz)
     return (
-      <div className="p-10 text-xl text-center">Quiz not found.</div>
+      <div className="p-10 text-xl text-center">
+        Quiz not found.
+      </div>
     );
 
   return (
@@ -132,18 +239,12 @@ export default function TakeQuizPage() {
       className={`${oswald.className} min-h-screen bg-gradient-to-br from-emerald-50 via-white to-slate-50 p-10`}
     >
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl md:text-4xl font-semibold text-slate-800">
-            {quiz.title}
-          </h1>
-          <img
-            src="/student-removebg-preview.png"
-            alt="Quiz Illustration"
-            className="h-24 md:h-32"
-          />
-        </div>
+        <h1 className="text-3xl md:text-4xl font-semibold text-slate-800 mb-8">
+          {quiz.title}
+        </h1>
 
-        {/* Name Input */}
+
+
         {!submitted && (
           <div className="mb-6">
             <input
@@ -151,91 +252,54 @@ export default function TakeQuizPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Enter your name"
-              className="w-full md:w-1/2 p-3 border rounded-lg mb-2"
+              className="w-full md:w-1/2 p-3 border rounded-lg"
             />
           </div>
         )}
 
-        {/* Questions */}
-        {quiz.questions?.length > 0 ? (
-          quiz.questions.map((q, index) => {
-            const selected = answers[index];
-            const correct = q.correctAnswer;
+        {currentQuestion && !submitted && (
+          <div className="mb-6 p-6 bg-white rounded-2xl shadow-md border border-emerald-100">
+            <div className="mb-3 text-sm text-slate-500">
+              Difficulty: {difficulty.toUpperCase()}
+            </div>
 
-            return (
+            <h2 className="font-medium text-slate-800 mb-4">
+              {currentQuestion.questionText}
+            </h2>
+
+            {currentQuestion.options?.map((option, i) => (
               <div
-                key={q.id}
-                className="mb-6 p-6 bg-white rounded-2xl shadow-md border border-emerald-100"
+                key={i}
+                className="p-3 border rounded-lg mb-2 cursor-pointer hover:bg-emerald-100 transition bg-emerald-50"
+                onClick={() => handleAnswer(option)}
               >
-                <div className="flex items-center mb-4">
-                  <span className="font-semibold text-slate-700 mr-2">
-                    {index + 1}.
-                  </span>
-                  <h2 className="font-medium text-slate-800">
-                    {q.questionText}
-                  </h2>
-                </div>
-
-                {q.options?.map((option, i) => {
-                  let bgClass = "bg-emerald-50";
-
-                  if (submitted) {
-                    if (option === correct)
-                      bgClass = "bg-green-300";
-                    else if (
-                      option === selected &&
-                      option !== correct
-                    )
-                      bgClass = "bg-red-300";
-                  } else if (option === selected) {
-                    bgClass = "bg-emerald-200";
-                  }
-
-                  return (
-                    <div
-                      key={`${q.id}-${i}`}
-                      className={`p-3 border rounded-lg mb-2 cursor-pointer hover:bg-emerald-100 transition ${bgClass}`}
-                      onClick={() =>
-                        handleSelectOption(index, option)
-                      }
-                    >
-                      {option}
-                    </div>
-                  );
-                })}
+                {option}
               </div>
-            );
-          })
-        ) : (
-          <p className="text-xl text-center">
-            No questions available for this quiz.
-          </p>
+            ))}
+          </div>
         )}
 
-        {/* Submit Button */}
-        {quiz.questions?.length > 0 && !submitted && (
-          <button
-            onClick={handleSubmit}
-            className="mt-6 w-full md:w-auto px-8 py-3 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition"
-          >
-            Submit Quiz
-          </button>
-        )}
-
-        {/* After Submission */}
         {submitted && (
-          <>
-            <p className="mt-6 text-xl md:text-2xl font-semibold text-slate-800 text-center">
-              Quiz submitted successfully!
+          <div className="text-center bg-white p-8 rounded-2xl shadow-md">
+            <p className="text-2xl font-semibold mb-4">
+              Quiz Completed!
+            </p>
+
+            <p className="text-xl mb-4">
+              Final Adaptive Score: {score}
+            </p>
+
+            <p className="text-lg text-slate-700 mb-6">
+              {feedback}
             </p>
 
             <button
-              onClick={() => router.push("/student-dashboard")}
-              className="mt-6 w-full md:w-auto px-8 py-3 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition"
+              onClick={handleSubmit}
+              className="px-8 py-3 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition"
             >
-              Go to Dashboard
+              Save Result
             </button>
-          </>
+          </div>
         )}
       </div>
     </div>
