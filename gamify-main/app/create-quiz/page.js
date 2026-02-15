@@ -126,7 +126,7 @@ export default function CreateQuiz() {
           placeholder="Quiz Title"
           value={quizTitle}
           onChange={(e) => setQuizTitle(e.target.value)}
-          className="w-full p-3 bg-emerald-100 border border-emerald-200 text-emerald-900 placeholder:text-emerald-500 rounded-xl mb-8 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+          className="w-full p-3 border rounded-xl mb-8"
         />
 
         {questions.map((q, qIndex) => (
@@ -145,7 +145,7 @@ export default function CreateQuiz() {
                   e.target.value
                 )
               }
-              className="w-full p-3 bg-emerald-100 border border-emerald-200 text-emerald-900 placeholder:text-emerald-500 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+              className="w-full p-3 border rounded-lg mb-4"
             />
 
             {/* Difficulty Selector */}
@@ -158,7 +158,7 @@ export default function CreateQuiz() {
                   e.target.value
                 )
               }
-              className="w-full p-2 bg-emerald-100 border border-emerald-200 text-emerald-900 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+              className="w-full p-2 border rounded-lg mb-4"
             >
               <option value="easy">Easy</option>
               <option value="medium">Medium</option>
@@ -178,7 +178,7 @@ export default function CreateQuiz() {
                     e.target.value
                   )
                 }
-                className="w-full p-2 bg-emerald-100 border border-emerald-200 text-emerald-900 placeholder:text-emerald-500 rounded-lg mb-2 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                className="w-full p-2 border rounded-lg mb-2"
               />
             ))}
 
@@ -193,7 +193,7 @@ export default function CreateQuiz() {
                   e.target.value
                 )
               }
-              className="w-full p-2 bg-emerald-100 border border-emerald-200 text-emerald-900 placeholder:text-emerald-500 rounded-lg mt-2 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+              className="w-full p-2 border rounded-lg mt-2"
             />
           </div>
         ))}

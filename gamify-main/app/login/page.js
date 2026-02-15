@@ -78,7 +78,7 @@ export default function LoginPage() {
               required
               value={form.email}
               onChange={handleChange}
-              className="w-full p-3 rounded-xl bg-emerald-100 border border-emerald-200 text-emerald-900 placeholder:text-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-400 transition"
+              className="w-full p-3 rounded-xl bg-emerald-50 border border-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-400 transition"
             />
           </div>
 
@@ -92,17 +92,18 @@ export default function LoginPage() {
               required
               value={form.password}
               onChange={handleChange}
-              className="w-full p-3 rounded-xl bg-emerald-100 border border-emerald-200 text-emerald-900 placeholder:text-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-400 transition"
+              className="w-full p-3 rounded-xl bg-emerald-50 border border-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-400 transition"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className={`py-3 rounded-full font-medium shadow-md transition-all duration-300 w-full ${loading
-              ? "bg-slate-400 text-white cursor-not-allowed"
-              : "bg-emerald-600 text-white hover:bg-emerald-700"
-              }`}
+            className={`py-3 rounded-full font-medium shadow-md transition-all duration-300 w-full ${
+              loading
+                ? "bg-slate-400 text-white cursor-not-allowed"
+                : "bg-emerald-600 text-white hover:bg-emerald-700"
+            }`}
           >
             {loading ? "Logging in..." : "Login"}
           </button>

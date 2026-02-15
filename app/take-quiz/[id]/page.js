@@ -132,15 +132,15 @@ export default function TakeQuizPage() {
         difficulty === "easy"
           ? "medium"
           : difficulty === "medium"
-          ? "hard"
-          : "hard";
+            ? "hard"
+            : "hard";
     } else {
       nextDifficulty =
         difficulty === "hard"
           ? "medium"
           : difficulty === "medium"
-          ? "easy"
-          : "easy";
+            ? "easy"
+            : "easy";
     }
 
     const newHistory = [
@@ -170,7 +170,37 @@ export default function TakeQuizPage() {
 
     if (updatedUsed.size === quiz.questions.length) {
       setSubmitted(true);
+<<<<<<< HEAD
       generateWeaknessSummary(newScore, newMaxScore, newHistory);
+=======
+    }
+  };
+
+  // 🔥 Personalized Feedback Generator
+  const generatePersonalizedFeedback = (finalScore) => {
+    const percentage =
+      answeredCount === 0
+        ? 0
+        : (finalScore / (answeredCount * 3)) * 100;
+
+    let message = "";
+
+    if (percentage >= 80) {
+      message =
+        "🌟 Outstanding performance! You handled higher difficulty questions confidently. You're ready for advanced challenges!";
+    } else if (percentage >= 60) {
+      if (
+        performance.hard.total > 0 &&
+        performance.hard.correct <
+        performance.hard.total / 2
+      ) {
+        message =
+          "👍 Good job! You perform well on easier questions. Focus on mastering hard-level concepts to improve further.";
+      } else {
+        message =
+          "Nice effort! With a bit more practice, you can reach top-level mastery.";
+      }
+>>>>>>> ace4e0e02df1390e506a71d4bfa01a5bc08e3229
     } else {
       setCurrentQuestion(
         remaining[Math.floor(Math.random() * remaining.length)]
@@ -231,6 +261,7 @@ export default function TakeQuizPage() {
             {quiz.title}
           </h1>
 
+<<<<<<< HEAD
           {!submitted && (
             <div className="mb-6">
               <input
@@ -240,6 +271,25 @@ export default function TakeQuizPage() {
                 placeholder="Enter your name"
                 className="w-full p-4 border border-emerald-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-400 transition"
               />
+=======
+
+        {!submitted && (
+          <div className="mb-6">
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your name"
+              className="w-full md:w-1/2 p-3 bg-emerald-100 border border-emerald-200 text-emerald-900 placeholder:text-emerald-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400"
+            />
+          </div>
+        )}
+
+        {currentQuestion && !submitted && (
+          <div className="mb-6 p-6 bg-white rounded-2xl shadow-md border border-emerald-100">
+            <div className="mb-3 text-sm text-slate-500">
+              Difficulty: {difficulty.toUpperCase()}
+>>>>>>> ace4e0e02df1390e506a71d4bfa01a5bc08e3229
             </div>
           )}
 
