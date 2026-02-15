@@ -24,7 +24,7 @@ export default function ContactPage() {
             Get in Touch
           </h1>
           <img
-            src="/contact-removebg-preview.png"
+            src="/panda-removebg-preview.png"
             alt="Contact"
             className="h-40 w-40"
           />
