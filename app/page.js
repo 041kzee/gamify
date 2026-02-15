@@ -3,15 +3,15 @@ import React from 'react';
 import { useState } from 'react';
 import { Oswald } from 'next/font/google';
 const oswald = Oswald({ subsets: ['latin'], weight: '400' });
-import {useRouter} from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import Footer from './components/Footer'
 export default function LandingPage() {
   const [selectedRole, setSelectedRole] = useState(null);
   const router = useRouter();
- 
+
   return (
-   
-    <div className={ `${oswald.className} min-h-screen bg-gradient-to-br from-emerald-50 via-white to-slate-50` } >
+
+    <div className={`${oswald.className} min-h-screen bg-gradient-to-br from-emerald-50 via-white to-slate-50`} >
       {/* Header */}
       <header className="px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
@@ -23,7 +23,7 @@ export default function LandingPage() {
             <button className="px-4 py-2 text-slate-700 hover:text-slate-900 font-medium transition-colors cursor-pointer" onClick={() => router.push('/login')}>
               Login
             </button>
-            <button className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-medium transition-colors cursor-pointer" onClick={()=> router.push('/register')}>
+            <button className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-medium transition-colors cursor-pointer" onClick={() => router.push('/register')}>
               Get Started
             </button>
           </div>
@@ -36,13 +36,13 @@ export default function LandingPage() {
           {/* Title & Description */}
           <div className="text-center mb-16 justify-center items-center">
             <div className="flex justify-center items-center mb-4">
-            <img src="/panda-removebg-preview.png" className="h-70 w-70 " alt="PandaLearn Logo" />
+              <img src="/panda-removebg-preview.png" className="h-70 w-70 " alt="PandaLearn Logo" />
             </div>
             <h1 className="text-5xl md:text-6xl font-bold text-slate-900 mb-6">
               Bamboo your BrainPower!
             </h1>
             <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-              Gamified adaptive learning platform that makes education fun and engaging. 
+              Gamified adaptive learning platform that makes education fun and engaging.
               Track progress, compete on leaderboards, and get AI-powered feedback.
             </p>
           </div>
@@ -56,11 +56,10 @@ export default function LandingPage() {
               {/* Student Card */}
               <div
                 onClick={() => setSelectedRole('student')}
-                className={`p-8 rounded-2xl border-2 cursor-pointer transition-all ${
-                  selectedRole === 'student'
-                    ? 'border-emerald-500 bg-emerald-50 shadow-lg scale-105'
-                    : 'border-slate-200 bg-white hover:border-emerald-300 hover:shadow-md'
-                }`}
+                className={`p-8 rounded-2xl border-2 cursor-pointer transition-all ${selectedRole === 'student'
+                  ? 'border-emerald-500 bg-emerald-50 shadow-lg scale-105'
+                  : 'border-slate-200 bg-white hover:border-emerald-300 hover:shadow-md'
+                  }`}
               >
                 <div className="text-center">
                   <img src="/student-removebg-preview.png" className="h-30 w-30 mx-auto mb-4" alt="Student Icon" />
@@ -88,11 +87,10 @@ export default function LandingPage() {
               {/* Teacher Card */}
               <div
                 onClick={() => setSelectedRole('teacher')}
-                className={`p-8 rounded-2xl border-2 cursor-pointer transition-all ${
-                  selectedRole === 'teacher'
-                    ? 'border-blue-500 bg-blue-50 shadow-lg scale-105'
-                    : 'border-slate-200 bg-white hover:border-blue-300 hover:shadow-md'
-                }`}
+                className={`p-8 rounded-2xl border-2 cursor-pointer transition-all ${selectedRole === 'teacher'
+                  ? 'border-blue-500 bg-blue-50 shadow-lg scale-105'
+                  : 'border-slate-200 bg-white hover:border-blue-300 hover:shadow-md'
+                  }`}
               >
                 <div className="text-center">
                   <img src="/teacher1.png" className="h-30 w-30 mx-auto mb-4" alt="Teacher Icon" />
@@ -123,11 +121,10 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <button
               disabled={!selectedRole}
-              className={`px-8 py-4 rounded-xl font-semibold text-lg transition-all ${
-                selectedRole
-                  ? 'bg-slate-900 text-white hover:bg-slate-800 shadow-lg hover:shadow-xl'
-                  : 'bg-slate-300 text-slate-500 cursor-not-allowed'
-              }`}
+              className={`px-8 py-4 rounded-xl font-semibold text-lg transition-all ${selectedRole
+                ? 'bg-slate-900 text-white hover:bg-slate-800 shadow-lg hover:shadow-xl'
+                : 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                }`}
               onClick={() => router.push(selectedRole === 'student' ? '/student-dashboard' : '/teacher-dashboard')}
             >
               {selectedRole ? `Continue as ${selectedRole === 'student' ? 'Student' : 'Teacher'}` : 'Select a Role'}
@@ -139,8 +136,8 @@ export default function LandingPage() {
         </div>
       </main>
 
-    
-     <Footer/>
+
+      <Footer />
     </div>
   );
 }

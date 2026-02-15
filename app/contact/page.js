@@ -60,7 +60,7 @@ export default function ContactPage() {
 
           {/* Contact Form Section */}
           <form className="bg-white p-8 rounded-3xl shadow-md border border-emerald-100 space-y-6">
-            
+
             <div>
               <label className="block mb-2 text-sm font-medium text-slate-700">
                 Full Name
@@ -68,7 +68,7 @@ export default function ContactPage() {
               <input
                 type="text"
                 placeholder="Enter your name"
-                className="w-full border border-emerald-100 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                className="w-full bg-emerald-100 border border-emerald-200 text-emerald-900 placeholder:text-emerald-500 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-400"
               />
             </div>
 
@@ -79,7 +79,7 @@ export default function ContactPage() {
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="w-full border border-emerald-100 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                className="w-full bg-emerald-100 border border-emerald-200 text-emerald-900 placeholder:text-emerald-500 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-400"
               />
             </div>
 
@@ -90,7 +90,7 @@ export default function ContactPage() {
               <textarea
                 rows="5"
                 placeholder="Write your message..."
-                className="w-full border border-emerald-100 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                className="w-full bg-emerald-100 border border-emerald-200 text-emerald-900 placeholder:text-emerald-500 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-400"
               ></textarea>
             </div>
 

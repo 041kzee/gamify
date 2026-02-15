@@ -26,89 +26,89 @@ export default function TeacherDashboard() {
   const [students, setStudents] = useState([]);
 
   useEffect(() => {
-  const fetchAnalytics = async () => {
-    try {
-      // 🔹 Get total quizzes
-      const quizzesSnapshot = await getDocs(collection(db, "quizzes"));
-      const totalQuizzes = quizzesSnapshot.size;
+    const fetchAnalytics = async () => {
+      try {
+        // 🔹 Get total quizzes
+        const quizzesSnapshot = await getDocs(collection(db, "quizzes"));
+        const totalQuizzes = quizzesSnapshot.size;
 
-      // 🔹 Get all quiz results
-      const resultsSnapshot = await getDocs(
-        collection(db, "quizResults")
-      );
+        // 🔹 Get all quiz results
+        const resultsSnapshot = await getDocs(
+          collection(db, "quizResults")
+        );
 
-      const results = resultsSnapshot.docs.map((doc) => doc.data());
+        const results = resultsSnapshot.docs.map((doc) => doc.data());
 
-      const studentMap = {};
-      let overallScore = 0;
-      let overallTotal = 0;
+        const studentMap = {};
+        let overallScore = 0;
+        let overallTotal = 0;
 
-      results.forEach((result) => {
-        const name = result.name || "Unknown";
-        const score = Number(result.score) || 0;
-        const total = Number(result.total) || 0;
-        const quizId = result.quizId;
+        results.forEach((result) => {
+          const name = result.name || "Unknown";
+          const score = Number(result.score) || 0;
+          const total = Number(result.total) || 0;
+          const quizId = result.quizId;
 
-        overallScore += score;
-        overallTotal += total;
+          overallScore += score;
+          overallTotal += total;
 
-        if (!studentMap[name]) {
-          studentMap[name] = {
-            quizIds: new Set(),
-            totalScore: 0,
-            totalMarks: 0,
-          };
-        }
+          if (!studentMap[name]) {
+            studentMap[name] = {
+              quizIds: new Set(),
+              totalScore: 0,
+              totalMarks: 0,
+            };
+          }
 
-        // Avoid duplicate attempts counting multiple times
-        if (quizId) {
-          studentMap[name].quizIds.add(quizId);
-        }
+          // Avoid duplicate attempts counting multiple times
+          if (quizId) {
+            studentMap[name].quizIds.add(quizId);
+          }
 
-        studentMap[name].totalScore += score;
-        studentMap[name].totalMarks += total;
-      });
+          studentMap[name].totalScore += score;
+          studentMap[name].totalMarks += total;
+        });
 
-      const totalStudents = Object.keys(studentMap).length;
+        const totalStudents = Object.keys(studentMap).length;
 
-      const avgScore =
-        overallTotal > 0
-          ? ((overallScore / overallTotal) * 100).toFixed(1)
-          : 0;
+        const avgScore =
+          overallTotal > 0
+            ? ((overallScore / overallTotal) * 100).toFixed(1)
+            : 0;
 
-      const studentAnalytics = Object.entries(studentMap).map(
-        ([name, data]) => ({
-          id: name,
-          name,
-          progress:
-            totalQuizzes > 0
-              ? Math.round(
+        const studentAnalytics = Object.entries(studentMap).map(
+          ([name, data]) => ({
+            id: name,
+            name,
+            progress:
+              totalQuizzes > 0
+                ? Math.round(
                   (data.quizIds.size / totalQuizzes) * 100
                 )
-              : 0,
-          avgScore:
-            data.totalMarks > 0
-              ? Math.round(
+                : 0,
+            avgScore:
+              data.totalMarks > 0
+                ? Math.round(
                   (data.totalScore / data.totalMarks) * 100
                 )
-              : 0,
-        })
-      );
+                : 0,
+          })
+        );
 
-      setAnalytics({
-        totalStudents,
-        avgScore,
-        completedQuizzes: results.length,
-      });
+        setAnalytics({
+          totalStudents,
+          avgScore,
+          completedQuizzes: results.length,
+        });
 
-      setStudents(studentAnalytics);
-    } catch (error) {
-      console.error("Error fetching analytics:", error);
-    }
-  };
+        setStudents(studentAnalytics);
+      } catch (error) {
+        console.error("Error fetching analytics:", error);
+      }
+    };
 
-  fetchAnalytics();
-}, []);
+    fetchAnalytics();
+  }, []);
 
 
   const handleCreateQuiz = () => {
@@ -148,7 +148,7 @@ export default function TeacherDashboard() {
               placeholder="Enter Quiz Title"
               value={quizTitle}
               onChange={(e) => setQuizTitle(e.target.value)}
-              className="flex-1 p-3 rounded-xl bg-emerald-50 border border-emerald-100 focus:ring-2 focus:ring-emerald-300 outline-none"
+              className="flex-1 p-3 rounded-xl bg-emerald-100 border border-emerald-200 text-emerald-900 placeholder:text-emerald-500 focus:ring-2 focus:ring-emerald-300 outline-none"
             />
 
             <button

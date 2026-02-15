@@ -30,36 +30,36 @@ export default function Register() {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError("");
+    e.preventDefault();
+    setError("");
 
-  try {
-    const userCredential = await createUserWithEmailAndPassword(
-      auth,
-      form.email,
-      form.password
-    );
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        form.email,
+        form.password
+      );
 
-    await updateProfile(userCredential.user, {
-      displayName: form.name,
-    });
+      await updateProfile(userCredential.user, {
+        displayName: form.name,
+      });
 
-    localStorage.setItem("role", form.role);
+      localStorage.setItem("role", form.role);
 
-    if (form.role === "teacher") {
-      router.push("/teacher-dashboard");
-    } else {
-      router.push("/student-dashboard");
+      if (form.role === "teacher") {
+        router.push("/teacher-dashboard");
+      } else {
+        router.push("/student-dashboard");
+      }
+
+    } catch (err) {
+      setError(err.message);
     }
-
-  } catch (err) {
-    setError(err.message);
-  }
-};
+  };
 
   return (
     <div className={`${oswald.className} min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-slate-50 px-6`}>
-      
+
       <div className="max-w-[1100px] w-full bg-white rounded-3xl shadow-xl flex overflow-hidden border border-emerald-100">
 
         <div className="hidden md:flex w-1/2 items-center justify-center bg-emerald-50">
@@ -88,7 +88,7 @@ export default function Register() {
             value={form.name}
             onChange={handleChange}
             required
-            className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-100 focus:ring-2 focus:ring-emerald-300 outline-none"
+            className="mb-4 p-3 rounded-xl bg-emerald-100 border border-emerald-200 text-emerald-900 placeholder:text-emerald-500 focus:ring-2 focus:ring-emerald-300 outline-none"
           />
 
           <input
@@ -98,7 +98,7 @@ export default function Register() {
             value={form.email}
             onChange={handleChange}
             required
-            className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-100 focus:ring-2 focus:ring-emerald-300 outline-none"
+            className="mb-4 p-3 rounded-xl bg-emerald-100 border border-emerald-200 text-emerald-900 placeholder:text-emerald-500 focus:ring-2 focus:ring-emerald-300 outline-none"
           />
 
           <input
@@ -108,7 +108,7 @@ export default function Register() {
             value={form.password}
             onChange={handleChange}
             required
-            className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-100 focus:ring-2 focus:ring-emerald-300 outline-none"
+            className="mb-4 p-3 rounded-xl bg-emerald-100 border border-emerald-200 text-emerald-900 placeholder:text-emerald-500 focus:ring-2 focus:ring-emerald-300 outline-none"
           />
 
           <select
@@ -116,7 +116,7 @@ export default function Register() {
             value={form.role}
             onChange={handleChange}
             required
-            className="mb-6 p-3 rounded-xl bg-emerald-50 border border-emerald-100 focus:ring-2 focus:ring-emerald-300 outline-none"
+            className="mb-6 p-3 rounded-xl bg-emerald-100 border border-emerald-200 text-emerald-900 placeholder:text-emerald-500 focus:ring-2 focus:ring-emerald-300 outline-none"
           >
             <option value="">Select Role</option>
             <option value="student">Student</option>

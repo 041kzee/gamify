@@ -130,15 +130,15 @@ export default function TakeQuizPage() {
         difficulty === "easy"
           ? "medium"
           : difficulty === "medium"
-          ? "hard"
-          : "hard";
+            ? "hard"
+            : "hard";
     } else {
       nextDifficulty =
         difficulty === "hard"
           ? "medium"
           : difficulty === "medium"
-          ? "easy"
-          : "easy";
+            ? "easy"
+            : "easy";
     }
 
     setScore(newScore);
@@ -179,7 +179,7 @@ export default function TakeQuizPage() {
       if (
         performance.hard.total > 0 &&
         performance.hard.correct <
-          performance.hard.total / 2
+        performance.hard.total / 2
       ) {
         message =
           "👍 Good job! You perform well on easier questions. Focus on mastering hard-level concepts to improve further.";
@@ -252,7 +252,7 @@ export default function TakeQuizPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Enter your name"
-              className="w-full md:w-1/2 p-3 border rounded-lg"
+              className="w-full md:w-1/2 p-3 bg-emerald-100 border border-emerald-200 text-emerald-900 placeholder:text-emerald-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400"
             />
           </div>
         )}
