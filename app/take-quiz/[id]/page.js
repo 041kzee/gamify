@@ -26,7 +26,6 @@ export default function TakeQuizPage() {
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState("");
-
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [difficulty, setDifficulty] = useState("medium");
   const [score, setScore] = useState(0);
@@ -34,15 +33,20 @@ export default function TakeQuizPage() {
   const [usedQuestions, setUsedQuestions] = useState(new Set());
   const [submitted, setSubmitted] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [maxPossibleScore, setMaxPossibleScore] = useState(0);
+  const [answerHistory, setAnswerHistory] = useState([]);
 
-  // 🔥 NEW: Track performance by difficulty
+  const HAPPY_PANDA_URL = "/happy-removebg-preview.png";
+  const SAD_PANDA_URL = "/sad-removebg-preview.png";
+  const happyText = "Great job! Your hard work is making this panda happy. Keep it up!";
+  const sadText = "Don't worry! Every mistake is a step towards learning. This panda believes in you!";
+
   const [performance, setPerformance] = useState({
     easy: { correct: 0, total: 0 },
     medium: { correct: 0, total: 0 },
     hard: { correct: 0, total: 0 },
   });
 
-  // Fetch quiz
   useEffect(() => {
     if (!id) return;
 
@@ -57,7 +61,6 @@ export default function TakeQuizPage() {
         }
 
         const quizData = quizSnap.data();
-
         const questionsRef = collection(db, "quizzes", id, "questions");
         const questionsSnap = await getDocs(questionsRef);
 
@@ -66,17 +69,10 @@ export default function TakeQuizPage() {
           ...doc.data(),
         }));
 
-        setQuiz({
-          ...quizData,
-          questions,
-        });
+        setQuiz({ ...quizData, questions });
 
-        const firstQuestion = getNextQuestion(
-          questions,
-          "medium",
-          new Set()
-        );
-
+        const firstQuestion =
+          questions[Math.floor(Math.random() * questions.length)];
         setCurrentQuestion(firstQuestion);
       } catch (error) {
         console.error("Error fetching quiz:", error);
@@ -88,44 +84,50 @@ export default function TakeQuizPage() {
     fetchQuiz();
   }, [id]);
 
-  const getNextQuestion = (questions, level, used) => {
-    const filtered = questions.filter(
-      (q) => q.difficulty === level && !used.has(q.id)
-    );
+  const generateWeaknessSummary = async (finalScore, finalMaxScore, history) => {
+    try {
+      const response = await fetch("/api/generate-summary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          answers: history,
+          finalScore,
+          maxScore: finalMaxScore,
+        }),
+      });
 
-    if (filtered.length === 0) return null;
+      if (!response.ok) {
+        throw new Error(`API returned status ${response.status}`);
+      }
 
-    return filtered[Math.floor(Math.random() * filtered.length)];
+      const data = await response.json();
+      setFeedback(data.summary);
+    } catch (error) {
+      console.error("Error generating summary:", error);
+      setFeedback("We couldn't generate a learning summary right now.");
+    }
   };
 
-  // 🔥 Adaptive + performance tracking
   const handleAnswer = (option) => {
     if (!currentQuestion || submitted) return;
 
     const isCorrect = option === currentQuestion.correctAnswer;
-
-    const difficultyPoints = {
-      easy: 1,
-      medium: 2,
-      hard: 3,
-    };
+    const difficultyPoints = { easy: 1, medium: 2, hard: 3 };
 
     let newScore = score;
     let nextDifficulty = difficulty;
+    const questionPoints = difficultyPoints[difficulty];
+    const newMaxScore = maxPossibleScore + questionPoints;
 
-    // Update performance tracking
     setPerformance((prev) => {
       const updated = { ...prev };
       updated[difficulty].total += 1;
-      if (isCorrect) {
-        updated[difficulty].correct += 1;
-      }
+      if (isCorrect) updated[difficulty].correct += 1;
       return updated;
     });
 
     if (isCorrect) {
-      newScore += difficultyPoints[difficulty];
-
+      newScore += questionPoints;
       nextDifficulty =
         difficulty === "easy"
           ? "medium"
@@ -141,6 +143,19 @@ export default function TakeQuizPage() {
           : "easy";
     }
 
+    const newHistory = [
+      ...answerHistory,
+      {
+        question: currentQuestion.questionText,
+        selected: option,
+        correct: currentQuestion.correctAnswer,
+        difficulty,
+        isCorrect,
+      },
+    ];
+
+    setAnswerHistory(newHistory);
+    setMaxPossibleScore(newMaxScore);
     setScore(newScore);
     setAnsweredCount((prev) => prev + 1);
     setDifficulty(nextDifficulty);
@@ -149,50 +164,18 @@ export default function TakeQuizPage() {
     updatedUsed.add(currentQuestion.id);
     setUsedQuestions(updatedUsed);
 
-    const nextQ = getNextQuestion(
-      quiz.questions,
-      nextDifficulty,
-      updatedUsed
+    const remaining = quiz.questions.filter(
+      (q) => !updatedUsed.has(q.id)
     );
 
-    if (nextQ) {
-      setCurrentQuestion(nextQ);
-    } else {
-      generatePersonalizedFeedback(newScore);
+    if (updatedUsed.size === quiz.questions.length) {
       setSubmitted(true);
-    }
-  };
-
-  // 🔥 Personalized Feedback Generator
-  const generatePersonalizedFeedback = (finalScore) => {
-    const percentage =
-      answeredCount === 0
-        ? 0
-        : (finalScore / (answeredCount * 3)) * 100;
-
-    let message = "";
-
-    if (percentage >= 80) {
-      message =
-        "🌟 Outstanding performance! You handled higher difficulty questions confidently. You're ready for advanced challenges!";
-    } else if (percentage >= 60) {
-      if (
-        performance.hard.total > 0 &&
-        performance.hard.correct <
-          performance.hard.total / 2
-      ) {
-        message =
-          "👍 Good job! You perform well on easier questions. Focus on mastering hard-level concepts to improve further.";
-      } else {
-        message =
-          "Nice effort! With a bit more practice, you can reach top-level mastery.";
-      }
+      generateWeaknessSummary(newScore, newMaxScore, newHistory);
     } else {
-      message =
-        "📘 You should revisit foundational concepts. Strengthen easy-level topics first, then move up gradually.";
+      setCurrentQuestion(
+        remaining[Math.floor(Math.random() * remaining.length)]
+      );
     }
-
-    setFeedback(message);
   };
 
   const handleSubmit = async () => {
@@ -220,87 +203,108 @@ export default function TakeQuizPage() {
     }
   };
 
+  const isPerfectScore =
+    answeredCount > 0 && score === maxPossibleScore;
+
   if (loading)
     return (
-      <div className="p-10 text-xl text-center">
+      <div className="flex items-center justify-center min-h-screen text-xl font-semibold text-emerald-700">
         Loading quiz...
       </div>
     );
 
   if (!quiz)
     return (
-      <div className="p-10 text-xl text-center">
+      <div className="flex items-center justify-center min-h-screen text-xl font-semibold text-emerald-700">
         Quiz not found.
       </div>
     );
 
   return (
     <div
-      className={`${oswald.className} min-h-screen bg-gradient-to-br from-emerald-50 via-white to-slate-50 p-10`}
+      className={`${oswald.className} min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-100 p-6`}
     >
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl md:text-4xl font-semibold text-slate-800 mb-8">
-          {quiz.title}
-        </h1>
+        <div className="bg-white/90 backdrop-blur-lg p-8 rounded-3xl shadow-xl border border-emerald-100">
 
+          <h1 className="text-4xl font-semibold text-emerald-800 mb-6 text-center">
+            {quiz.title}
+          </h1>
 
-
-        {!submitted && (
-          <div className="mb-6">
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Enter your name"
-              className="w-full md:w-1/2 p-3 border rounded-lg"
-            />
-          </div>
-        )}
-
-        {currentQuestion && !submitted && (
-          <div className="mb-6 p-6 bg-white rounded-2xl shadow-md border border-emerald-100">
-            <div className="mb-3 text-sm text-slate-500">
-              Difficulty: {difficulty.toUpperCase()}
+          {!submitted && (
+            <div className="mb-6">
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter your name"
+                className="w-full p-4 border border-emerald-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-400 transition"
+              />
             </div>
+          )}
 
-            <h2 className="font-medium text-slate-800 mb-4">
-              {currentQuestion.questionText}
-            </h2>
+          {!submitted && (
+            <div className="mb-4 text-sm text-emerald-600 text-center font-medium">
+              Question {answeredCount + 1} of {quiz.questions.length}
+            </div>
+          )}
 
-            {currentQuestion.options?.map((option, i) => (
-              <div
-                key={i}
-                className="p-3 border rounded-lg mb-2 cursor-pointer hover:bg-emerald-100 transition bg-emerald-50"
-                onClick={() => handleAnswer(option)}
-              >
-                {option}
+          {currentQuestion && !submitted && (
+            <div className="p-6 bg-white rounded-2xl shadow-md border border-emerald-100">
+
+              <div className="mb-3 text-xs font-semibold tracking-wider text-emerald-600 uppercase">
+                Difficulty: {difficulty}
               </div>
-            ))}
-          </div>
-        )}
 
-        {submitted && (
-          <div className="text-center bg-white p-8 rounded-2xl shadow-md">
-            <p className="text-2xl font-semibold mb-4">
-              Quiz Completed!
-            </p>
+              <h2 className="text-lg font-medium mb-6 text-slate-800">
+                {currentQuestion.questionText}
+              </h2>
 
-            <p className="text-xl mb-4">
-              Final Adaptive Score: {score}
-            </p>
+              <div className="space-y-3">
+                {currentQuestion.options?.map((option, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleAnswer(option)}
+                    className="w-full p-4 text-left rounded-xl bg-emerald-50 hover:bg-emerald-100 transition shadow-sm border border-emerald-100"
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
-            <p className="text-lg text-slate-700 mb-6">
-              {feedback}
-            </p>
+          {submitted && (
+            <div className="text-center space-y-6">
 
-            <button
-              onClick={handleSubmit}
-              className="px-8 py-3 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition"
-            >
-              Save Result
-            </button>
-          </div>
-        )}
+              <img
+                src={isPerfectScore ? HAPPY_PANDA_URL : SAD_PANDA_URL}
+                alt="Panda"
+                className="w-52 mx-auto"
+              />
+
+              <p className="text-lg font-medium text-emerald-700">
+                {isPerfectScore ? happyText : sadText}
+              </p>
+
+              <p className="text-2xl font-semibold text-emerald-800">
+                Final Adaptive Score: {score}
+              </p>
+
+              <div className="bg-emerald-50 p-6 rounded-2xl shadow-inner text-slate-700 whitespace-pre-line border border-emerald-100">
+                {feedback}
+              </div>
+
+              <button
+                onClick={handleSubmit}
+                className="px-10 py-3 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition shadow-md"
+              >
+                Save Result
+              </button>
+            </div>
+          )}
+
+        </div>
       </div>
     </div>
   );
